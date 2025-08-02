@@ -2,14 +2,12 @@ pipeline{
     agent any
     environment {
         JAVA_HOME = tool 'JDK21'
-        MAVEN_HOME = tool 'Maven'
-        PATH = "${MAVEN_HOME}/bin:${JAVA_HOME}/bin:${env.PATH}"
+        PATH = "${JAVA_HOME}/bin:${env.PATH}"
     }
     stages {
         stage ('Env Check'){
             steps {
                 echo "JAVA_HOME: ${JAVA_HOME}"
-                echo "MAVEN_HOME: ${MAVEN_HOME}"
                 echo "PATH: ${PATH}"
             }
         }
