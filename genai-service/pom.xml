@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.springframework.samples.petclinic.vets</groupId>
-	<artifactId>spring-petclinic-genai-service</artifactId>
+	<artifactId>genai-service</artifactId>
 	<packaging>jar</packaging>
 	<description>Spring PetClinic Generative AI Service</description>
 
