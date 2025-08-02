@@ -13,6 +13,7 @@ pipeline{
                 echo 'Testing...'
                 // Add your test commands here
                 mvn test
+                
             }
         }
         stage('Deploy') {
