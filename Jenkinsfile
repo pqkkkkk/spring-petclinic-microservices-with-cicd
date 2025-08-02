@@ -1,23 +1,37 @@
 pipeline{
     agent any
+    environment {
+        JAVA_HOME = tool 'JDK21'
+        MAVEN_HOME = tool 'Maven'
+        PATH = "${MAVEN_HOME}/bin:${JAVA_HOME}/bin:${env.PATH}"
+    }
     stages {
-        stage('Build') {
+        stage ('Env Check'){
             steps {
-                echo 'Building...'
-                // Add your build commands here
+                echo "JAVA_HOME: ${JAVA_HOME}"
+                echo "MAVEN_HOME: ${MAVEN_HOME}"
+                echo "PATH: ${PATH}"
             }
         }
-        stage('Test') {
-            steps {
-                echo 'Testing...'
-                // Add your test commands here
+        stage('Build'){
+            steps{
+                echo "Building the project..."
+                sh 'mvn clean package -DskipTests'
             }
         }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying...'
-                // Add your deployment commands here
+        stage ('Test'){
+            steps{
+                echo "Running tests..."
+                sh 'mvn test'
             }
         }
     }
+    post {
+        success {
+            echo '✅ Build and Deployment completed successfully.'
+        }
+        failure {
+            echo '❌ Build or Deployment failed.'
+        }
+    } 
 }
