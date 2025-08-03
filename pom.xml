@@ -98,13 +98,6 @@
                                     <goal>report</goal>
                                 </goals>
                             </execution>
-                            <execution>
-                                <id>report-xml</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>report-xml</goal>
-                                </goals>
-                            </execution>
                         </executions>        
                     </plugin>
                     <plugin>
