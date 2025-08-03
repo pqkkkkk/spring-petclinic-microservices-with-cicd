@@ -86,17 +86,24 @@
                         <executions>
                             <!-- Thu thập khi chạy “mvn test” -->
                             <execution>
-                            <goals>
-                                <goal>prepare-agent</goal>
-                            </goals>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
                             </execution>
                             <!-- Sinh report sau test -->
                             <execution>
-                            <id>report</id>
-                            <phase>test</phase>
-                            <goals>
-                                <goal>report</goal>
-                            </goals>
+                                <id>report</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report-xml</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>report-xml</goal>
+                                </goals>
                             </execution>
                         </executions>        
                     </plugin>
