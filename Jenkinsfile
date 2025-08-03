@@ -11,6 +11,12 @@ pipeline{
                 echo "PATH: ${PATH}"
             }
         }
+        stage('Checkout'){
+            steps {
+                echo 'Checking out code from SCM...'
+                checkout scm
+            }
+        }
         stage('Build & Test'){
             steps{
                 echo 'Building and testing the application...'
@@ -29,19 +35,6 @@ pipeline{
                         checksAnnotationScope: 'SKIP',
 
                     )
-
-                    success{
-                        githubNotify (
-                            context: 'CI/Test',
-                            status: 'SUCCESS',
-                        )
-                    }
-                    failure{
-                        githubNotify (
-                            context: 'CI/Test',
-                            status: 'FAILURE',
-                        )
-                    }
                 }
             }
         }
