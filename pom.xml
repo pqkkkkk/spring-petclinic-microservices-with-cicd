@@ -16,14 +16,14 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>spring-petclinic-admin-server</module>
-        <module>spring-petclinic-customers-service</module>
-        <module>spring-petclinic-vets-service</module>
-        <module>spring-petclinic-visits-service</module>
-        <module>spring-petclinic-genai-service</module>
-        <module>spring-petclinic-config-server</module>
-        <module>spring-petclinic-discovery-server</module>
-        <module>spring-petclinic-api-gateway</module>
+        <module>admin-server</module>
+        <module>customers-service</module>
+        <module>vets-service</module>
+        <module>visits-service</module>
+        <module>genai-service</module>
+        <module>config-server</module>
+        <module>discovery-server</module>
+        <module>api-gateway</module>
     </modules>
 
     <properties>
@@ -79,6 +79,27 @@
             </activation>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.8</version>
+                        <executions>
+                            <!-- Thu thập khi chạy “mvn test” -->
+                            <execution>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <!-- Sinh report sau test -->
+                            <execution>
+                                <id>report</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>        
+                    </plugin>
                     <plugin>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-maven-plugin</artifactId>

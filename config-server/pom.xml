@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.springframework.samples.petclinic.discovery</groupId>
-    <artifactId>spring-petclinic-discovery-server</artifactId>
-    <packaging>jar</packaging>
-    <description>Spring PetClinic Discovery Server</description>
+	<groupId>org.springframework.samples.petclinic.config</groupId>
+	<artifactId>config-server</artifactId>
+	<packaging>jar</packaging>
+	<description>Spring PetClinic Config Server</description>
 
     <parent>
         <groupId>org.springframework.samples</groupId>
@@ -15,11 +15,11 @@
     </parent>
 
     <properties>
-        <docker.image.exposed.port>8761</docker.image.exposed.port>
+        <docker.image.exposed.port>8888</docker.image.exposed.port>
         <docker.image.dockerfile.dir>${basedir}/../docker</docker.image.dockerfile.dir>
     </properties>
 
-    <dependencies>
+	<dependencies>
         <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -28,21 +28,29 @@
         </dependency>
 
         <!-- Spring Cloud -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-config-server</artifactId>
+		</dependency>
+
+        <!-- Third-party librairies -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-config</artifactId>
+            <groupId>org.jolokia</groupId>
+            <artifactId>jolokia-core</artifactId>
         </dependency>
 
-        <!-- JAXB is required since Java 9 -->
+        <!-- Testing -->
         <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
         </dependency>
-    </dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+	</dependencies>
 
     <profiles>
         <profile>
