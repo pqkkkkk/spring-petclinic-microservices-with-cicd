@@ -53,11 +53,12 @@ pipeline{
         failure {
             echo '❌ Build or Deployment failed.'
         }
-
-        githubNotify (
-            context: 'CI/Build',
-            status: currentBuild.currentResult,
-            description: "Build #${env.BUILD_NUMBER} completed with status: ${currentBuild.currentResult}"
-        )
+        always{
+            githubNotify (
+                context: 'CI/Build',
+                status: currentBuild.currentResult,
+                description: "Build #${env.BUILD_NUMBER} completed with status: ${currentBuild.currentResult}"
+            )
+        }
     } 
 }
