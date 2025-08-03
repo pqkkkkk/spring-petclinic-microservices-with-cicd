@@ -14,7 +14,7 @@ pipeline{
         stage('Build & Test'){
             steps{
                 echo 'Building and testing the application...'
-                sh 'mvn clean verify -DskipTests'
+                sh 'mvn clean verify'
             }
             post{
                 always{
