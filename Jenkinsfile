@@ -26,8 +26,8 @@ pipeline{
                         tools:[
                             [parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']
                         ],
-                        checkAnnotationScope: 'SKIP',
-                        
+                        checksAnnotationScope: 'SKIP',
+
                     )
                 }
             }
