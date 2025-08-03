@@ -11,16 +11,25 @@ pipeline{
                 echo "PATH: ${PATH}"
             }
         }
-        stage('Build'){
+        stage('Build & Test'){
             steps{
-                echo "Building the project..."
-                sh 'mvn clean package -DskipTests'
+                echo 'Building and testing the application...'
+                sh 'mvn clean verify -DskipTests'
             }
-        }
-        stage ('Test'){
-            steps{
-                echo "Running tests..."
-                sh 'mvn test'
+            post{
+                always{
+                    // 1. Upload JUnit test results
+                    junit '**/target/surefire-reports/*.xml'
+
+                    // 2. Get code coverage report
+                    recordCoverage(
+                        tools:[
+                            [parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']
+                        ],
+                        checkAnnotationScope: 'SKIP',
+                        
+                    )
+                }
             }
         }
     }
