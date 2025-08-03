@@ -29,6 +29,19 @@ pipeline{
                         checksAnnotationScope: 'SKIP',
 
                     )
+
+                    success{
+                        gitHubNotify (
+                            context: 'CI/Test',
+                            status: 'SUCCESS',
+                        )
+                    }
+                    failure{
+                        gitHubNotify (
+                            context: 'CI/Test',
+                            status: 'FAILURE',
+                        )
+                    }
                 }
             }
         }
@@ -40,5 +53,11 @@ pipeline{
         failure {
             echo '❌ Build or Deployment failed.'
         }
+
+        gitHubNotify (
+            context: 'CI/Build',
+            status: currentBuild.currentResult,
+            description: "Build #${env.BUILD_NUMBER} completed with status: ${currentBuild.currentResult}"
+        )
     } 
 }
