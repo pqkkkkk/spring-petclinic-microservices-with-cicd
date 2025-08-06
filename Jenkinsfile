@@ -16,7 +16,7 @@ pipeline{
                 echo 'Detecting changes in the repository...'
                 script {
                     def changedFiles = getChangedFiles()
-                    env.CHANGED_SERVICES = changeFiles.collect{
+                    env.CHANGED_SERVICES = changedFiles.collect{
                         findServiceDir(it)
                     }.unique().join(',')
                 }
