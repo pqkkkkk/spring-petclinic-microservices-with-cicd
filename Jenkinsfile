@@ -5,22 +5,46 @@ pipeline{
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
     }
     stages {
-        stage ('Env Check'){
-            steps {
-                echo "JAVA_HOME: ${JAVA_HOME}"
-                echo "PATH: ${PATH}"
-            }
-        }
         stage('Checkout'){
             steps {
                 echo 'Checking out code from SCM...'
                 checkout scm
             }
         }
+        stage ('Detect Change'){
+            steps {
+                echo 'Detecting changes in the repository...'
+                script {
+                    def changedFiles = getChangedFiles()
+                    env.CHANGED_SERVICES = changeFiles.collect{
+                        findServiceDir(it)
+                    }.unique().join(',')
+                }
+            }
+        }
         stage('Build & Test'){
+            when {
+                expression {
+                    env.CHANGED_SERVICES?.trim()
+                }
+            }
             steps{
                 echo 'Building and testing the application...'
-                sh 'mvn clean verify'
+                script{
+                    def services = env.CHANGED_SERVICES.split(',') as List
+                    def parallelBuilds = [:]
+
+                    services.each {service ->
+                        parallelBuilds[service] = {
+                            dir(service){
+                                echo "Building and testing service: ${service}"
+                                sh 'mvn clean verify'
+                            }
+                        }
+                    }
+
+                    parallel parallelBuilds
+                }
             }
             post{
                 always{
@@ -54,4 +78,39 @@ pipeline{
             )
         }
     } 
+}
+
+def findServiceDir(String filePath){
+    def currentPath = filePath
+
+    while(true){
+        if(fileExists("${currentPath}/pom.xml")){
+            return currentPath
+        }
+
+        int lastSlash = currentPath.lastIndexOf('/')
+        if(lastSlash == -1) break
+
+        currentPath = currentPath.substring(0, lastSlash)
+    }
+
+    if(fileExists("pom.xml")){
+        return ""
+    }
+
+    return null
+}
+
+def getChangedFiles(){
+    def changedFiles = []
+
+    currentBuild.changeSets.each { changeSet ->
+        changeSet.items.each { commit ->
+            commit.affectedFiles.each { file ->
+                changedFiles.add(file.path)
+            }
+        }
+    }
+
+    return changedFiles
 }
