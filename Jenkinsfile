@@ -3,6 +3,8 @@ pipeline{
     environment {
         JAVA_HOME = tool 'JDK21'
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
+        DOCKER_REGISTRY_PREFIX = "kkkkk854"
+        DOCKER_CREDENTIALS_ID = 'docker-credential'
     }
     stages {
         stage('Checkout'){
@@ -59,6 +61,68 @@ pipeline{
                         checksAnnotationScope: 'SKIP',
 
                     )
+                }
+            }
+        }
+        stage("Build Docker Image"){
+            when {
+                expression {
+                    env.CHANGED_SERVICES?.trim()
+                }
+            }
+            steps {
+                echo 'Building Docker images for changed services...'
+                script {
+                    def services = env.CHANGED_SERVICES.split(',') as List
+                    def parallelBuilds = [:]
+
+                    services.each { service ->
+                        parallelBuilds[service] = {
+                            dir(service) {
+                                echo "Building Docker image for service: ${service}"
+                                sh "mvn clean install -DskipTest -PbuildDocker -Ddocker.image.tag=${env.GIT_COMMIT}"
+                            }
+                        }
+                    }
+
+                    parallel parallelBuilds
+                }
+            }
+        }
+        stage("Docker Login"){
+            steps {
+                script {
+                    echo 'Logging into Docker registry...'
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+                    }
+                }
+            }
+        }
+        stage("Push Docker Image"){
+            when {
+                expression {
+                    env.CHANGED_SERVICES?.trim()
+                }
+            }
+            steps {
+                echo 'Pushing Docker images to registry...'
+                script {
+                    def services = env.CHANGED_SERVICES.split(',') as List
+                    def parallelPushes = [:]
+
+                    services.each { service ->
+                        parallelPushes[service] = {
+                            dir(service) {
+                                echo "Pushing Docker image for service: ${service}"
+                                sh "docker push ${env.DOCKER_REGISTRY_PREFIX}/${service}:${env.GIT_COMMIT}"
+                                sh "docker tag ${env.DOCKER_REGISTRY_PREFIX}/${service}:${env.GIT_COMMIT} ${env.DOCKER_REGISTRY_PREFIX}/${service}:latest"
+                                sh "docker push ${env.DOCKER_REGISTRY_PREFIX}/${service}:latest"
+                            }
+                        }
+                    }
+
+                    parallel parallelPushes
                 }
             }
         }

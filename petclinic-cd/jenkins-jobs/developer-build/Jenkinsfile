@@ -1,0 +1,18 @@
+pipeline{
+    agent any
+    parameters{
+        string(name: 'VETS_BRANCH', defaultValue: 'main', description: 'Branch to build')
+        string(name:'CUSTOMERS_BRANCH', defaultValue: 'main', description: 'Branch to build')
+        string(name: 'VISITS_BRANCH', defaultValue: 'main', description: 'Branch to build')
+        string(name: 'GENAI_BRANCH', defaultValue: 'main', description: 'Branch to build')
+    }
+    stages{
+        stage('Deploy to K8s'){
+            steps{
+                script{
+                    
+                }
+            }
+        }
+    }
+}
