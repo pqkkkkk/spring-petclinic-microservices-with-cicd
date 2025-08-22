@@ -53,13 +53,20 @@ pipeline{
                     // 1. Upload JUnit test results
                     junit '**/target/surefire-reports/*.xml'
 
-                    // 2. Get code coverage report using publishCoverage
-                    publishCoverage(
-                        adapters: [
-                            jacocoAdapter('**/target/site/jacoco/jacoco.xml')
-                        ],
-                        sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
-                    )
+                    // 2. Get code coverage report (ignore source resolution errors)
+                    script {
+                        try {
+                            recordCoverage(
+                                tools:[
+                                    [parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']
+                                ],
+                                enabledForFailure: true
+                            )
+                        } catch (Exception e) {
+                            echo "Coverage collection failed: ${e.message}"
+                            // Continue pipeline execution
+                        }
+                    }
                 }
             }
         }
