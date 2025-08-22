@@ -58,8 +58,7 @@ pipeline{
                         tools:[
                             [parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']
                         ],
-                        checksAnnotationScope: 'NEVER',
-
+                        enabledForFailure: true
                     )
                 }
             }
