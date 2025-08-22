@@ -1,18 +1,145 @@
 pipeline{
     agent any
     parameters{
-        string(name: 'VETS_BRANCH', defaultValue: 'main', description: 'Branch to build')
-        string(name:'CUSTOMERS_BRANCH', defaultValue: 'main', description: 'Branch to build')
-        string(name: 'VISITS_BRANCH', defaultValue: 'main', description: 'Branch to build')
-        string(name: 'GENAI_BRANCH', defaultValue: 'main', description: 'Branch to build')
+        string(name: 'VETS_BRANCH', defaultValue: 'main', description: 'Branch to deploy for vets-service')
+        string(name:'CUSTOMERS_BRANCH', defaultValue: 'main', description: 'Branch to deploy for customers-service')
+        string(name: 'VISITS_BRANCH', defaultValue: 'main', description: 'Branch to deploy for visits-service')
+        string(name: 'GENAI_BRANCH', defaultValue: 'main', description: 'Branch to deploy for genai-service')
+        string(name: 'ADMIN_SERVER_BRANCH', defaultValue: 'main', description: 'Branch to deploy for admin-server')
+        string (name: 'API_GATEWAY_BRANCH', defaultValue: 'main', description: 'Branch to deploy for api-gateway')
+        string(name: 'CONFIG_SERVER_BRANCH', defaultValue: 'main', description: 'Branch to deploy for config-server')
+        string(name: 'DISCOVERY_SERVER_BRANCH', defaultValue: 'main', description: 'Branch to deploy for discovery-server')
     }
     stages{
+        stage('Validate Branches and Images') {
+            steps {
+                script {
+                    def services = [
+                        'vets-service': "${VETS_BRANCH}",
+                        'customers-service': "${CUSTOMERS_BRANCH}",
+                        'visits-service': "${VISITS_BRANCH}",
+                        'genai-service': "${GENAI_BRANCH}",
+                        'admin-server': "${ADMIN_SERVER_BRANCH}",
+                        'api-gateway': "${API_GATEWAY_BRANCH}",
+                        'config-server': "${CONFIG_SERVER_BRANCH}",
+                        'discovery-server': "${DISCOVERY_SERVER_BRANCH}"
+                    ]
+                    
+                    echo "=== Validating branches and determining image tags ==="
+                    services.each { service, branch ->
+                        def imageTag = getImageTag(service, branch)
+                        def imageName = "kkkkk854/${service}:${imageTag}"
+                        echo "Service: ${service}, Branch: ${branch}, Image: ${imageName}"
+                        
+                        // Optionally validate if image exists in registry
+                        // sh "docker manifest inspect ${imageName} || echo 'Warning: Image ${imageName} may not exist'"
+                    }
+                }
+            }
+        }
+        
         stage('Deploy to K8s'){
             steps{
                 script{
-                    
+                    def services = [
+                        'vets-service': "${VETS_BRANCH}",
+                        'customers-service': "${CUSTOMERS_BRANCH}",
+                        'visits-service': "${VISITS_BRANCH}",
+                        'genai-service': "${GENAI_BRANCH}",
+                        'admin-server': "${ADMIN_SERVER_BRANCH}",
+                        'api-gateway': "${API_GATEWAY_BRANCH}",
+                        'config-server': "${CONFIG_SERVER_BRANCH}",
+                        'discovery-server': "${DISCOVERY_SERVER_BRANCH}"
+                    ]
+
+                    // Deploy core services first (order matters)
+                    def coreServices = ['config-server', 'discovery-server']
+                    def businessServices = ['customers-service', 'vets-service', 'visits-service', 'genai-service']
+                    def gatewayServices = ['api-gateway', 'admin-server']
+
+                    // Deploy config-server first
+                    echo "=== Deploying Core Infrastructure Services ==="
+                    coreServices.each { service ->
+                        def branch = services[service]
+                        def imageTag = getImageTag(service, branch)
+                        echo "Deploying ${service} to K8s from branch ${branch} with tag ${imageTag}..."
+                        
+                        sh """
+                            helm upgrade --install ${service} ./petclinic-cd/k8s/helm \\
+                                -f ./petclinic-cd/k8s/helm/values-${service}.yaml \\
+                                --set image.tag=${imageTag} \\
+                                --namespace default \\
+                                --create-namespace \\
+                                --wait --timeout=300s
+                        """
+                        
+                        // Wait a bit for service to be ready
+                        sleep(time: 30, unit: 'SECONDS')
+                    }
+
+                    // Deploy business services
+                    echo "=== Deploying Business Services ==="
+                    def parallelBusinessBuilds = [:]
+                    businessServices.each { service ->
+                        parallelBusinessBuilds[service] = {
+                            def branch = services[service]
+                            def imageTag = getImageTag(service, branch)
+                            echo "Deploying ${service} to K8s from branch ${branch} with tag ${imageTag}..."
+                            
+                            sh """
+                                helm upgrade --install ${service} ./petclinic-cd/k8s/helm \\
+                                    -f ./petclinic-cd/k8s/helm/values-${service}.yaml \\
+                                    --set image.tag=${imageTag} \\
+                                    --namespace default \\
+                                    --create-namespace \\
+                                    --wait --timeout=300s
+                            """
+                        }
+                    }
+                    parallel parallelBusinessBuilds
+
+                    // Deploy gateway services last
+                    echo "=== Deploying Gateway Services ==="
+                    gatewayServices.each { service ->
+                        def branch = services[service]
+                        def imageTag = getImageTag(service, branch)
+                        echo "Deploying ${service} to K8s from branch ${branch} with tag ${imageTag}..."
+                        
+                        sh """
+                            helm upgrade --install ${service} ./petclinic-cd/k8s/helm \\
+                                -f ./petclinic-cd/k8s/helm/values-${service}.yaml \\
+                                --set image.tag=${imageTag} \\
+                                --namespace default \\
+                                --create-namespace \\
+                                --wait --timeout=300s
+                        """
+                    }
                 }
             }
+        }
+    }
+}
+
+def getImageTag(String service, String branch){
+    if (branch == 'main') {
+        echo "Using 'latest' tag for ${service} from main branch"
+        return 'latest'
+    } else {
+        try {
+            // Lấy commit ID đầy đủ của branch để làm tag (không cắt ngắn)
+            def commitId = sh(
+                script: "git ls-remote --heads origin ${branch} | cut -f1",
+                returnStdout: true
+            ).trim()
+            
+            if (commitId && commitId != '') {
+                echo "Using commit ID ${commitId} as tag for ${service} from branch ${branch}"
+                return commitId
+            } else {
+                error "Could not get commit ID for branch ${branch}. Branch may not exist."
+            }
+        } catch (Exception e) {
+            error "Failed to get commit ID for branch ${branch}: ${e.getMessage()}"
         }
     }
 }

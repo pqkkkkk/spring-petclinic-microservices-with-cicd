@@ -48,3 +48,23 @@ spring:
     activate:
       on-profile: docker
     import: configserver:http://config-server:8888
+
+---
+spring:
+  config:
+    activate:
+      on-profile: k8s
+    import: configserver:http://config-server:8888
+  cloud:
+    discovery:
+      enabled: true
+    
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://discovery-server:8761/eureka}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
