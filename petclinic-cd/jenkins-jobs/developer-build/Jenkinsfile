@@ -70,7 +70,7 @@ pipeline{
                                 --set image.tag=${imageTag} \\
                                 --namespace default \\
                                 --create-namespace \\
-                                --wait --timeout=300s
+                                --wait --timeout=300s --debug
                         """
                         
                         // Wait a bit for service to be ready
