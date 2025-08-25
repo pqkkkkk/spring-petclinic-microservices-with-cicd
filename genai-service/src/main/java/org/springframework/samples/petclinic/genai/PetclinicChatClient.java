@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/")
-
 public class PetclinicChatClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(PetclinicChatClient.class);
