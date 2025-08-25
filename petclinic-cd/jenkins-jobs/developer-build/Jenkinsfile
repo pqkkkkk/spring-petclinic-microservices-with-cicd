@@ -74,7 +74,7 @@ pipeline{
                         """
                         
                         // Wait a bit for service to be ready
-                        sleep(time: 30, unit: 'SECONDS')
+                        sleep(time: 15, unit: 'SECONDS')
                     }
 
                     // Deploy business services in parallel
