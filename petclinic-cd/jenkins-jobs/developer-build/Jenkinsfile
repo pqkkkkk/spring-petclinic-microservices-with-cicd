@@ -77,26 +77,43 @@ pipeline{
                         sleep(time: 30, unit: 'SECONDS')
                     }
 
-                    // Deploy business services
-                    echo "=== Deploying Business Services ==="
-                    def parallelBusinessBuilds = [:]
-                    businessServices.each { service ->
-                        parallelBusinessBuilds[service] = {
-                            def branch = services[service]
-                            def imageTag = getImageTag(service, branch)
-                            echo "Deploying ${service} to K8s from branch ${branch} with tag ${imageTag}..."
+                    // Deploy business services in parallel
+                    // echo "=== Deploying Business Services ==="
+                    // def parallelBusinessBuilds = [:]
+                    // businessServices.each { service ->
+                    //     parallelBusinessBuilds[service] = {
+                    //         def branch = services[service]
+                    //         def imageTag = getImageTag(service, branch)
+                    //         echo "Deploying ${service} to K8s from branch ${branch} with tag ${imageTag}..."
                             
-                            sh """
-                                helm upgrade --install ${service} ./petclinic-cd/k8s/helm \\
-                                    -f ./petclinic-cd/k8s/helm/values-${service}.yaml \\
-                                    --set image.tag=${imageTag} \\
-                                    --namespace default \\
-                                    --create-namespace \\
-                                    --wait --timeout=500s --debug
-                            """
-                        }
+                    //         sh """
+                    //             helm upgrade --install ${service} ./petclinic-cd/k8s/helm \\
+                    //                 -f ./petclinic-cd/k8s/helm/values-${service}.yaml \\
+                    //                 --set image.tag=${imageTag} \\
+                    //                 --namespace default \\
+                    //                 --create-namespace \\
+                    //                 --wait --timeout=500s --debug
+                    //         """
+                    //     }
+                    // }
+                    // parallel parallelBusinessBuilds
+
+                    // Deploy business services sequentially
+                    echo "=== Deploying Business Services ==="
+                    businessServices.each { service ->
+                        def branch = services[service]
+                        def imageTag = getImageTag(service, branch)
+                        echo "Deploying ${service} to K8s from branch ${branch} with tag ${imageTag}..."
+
+                        sh """
+                            helm upgrade --install ${service} ./petclinic-cd/k8s/helm \\
+                                -f ./petclinic-cd/k8s/helm/values-${service}.yaml \\
+                                --set image.tag=${imageTag} \\
+                                --namespace default \\
+                                --create-namespace \\
+                                --wait --timeout=500s --debug
+                        """
                     }
-                    parallel parallelBusinessBuilds
 
                     // Deploy gateway services last
                     echo "=== Deploying Gateway Services ==="
