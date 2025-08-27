@@ -4,7 +4,12 @@ spring:
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888/}
 
+server:
+  port: 8081
+
 eureka:
+  instance:
+    instance-id: ${spring.application.name}:${random.uuid}
   client:
     service-url:
       defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://discovery-server:8761/eureka}
