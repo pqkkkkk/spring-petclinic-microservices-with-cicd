@@ -21,6 +21,10 @@ spring:
   cloud:
     discovery:
       enabled: true
+    config:
+      # Prevent config server from overriding Eureka settings
+      override-none: true
+      override-system-properties: false
     
 eureka:
   client:

@@ -1,0 +1,17 @@
+spring:
+  cloud:
+    config:
+      # Allow environment properties to override config server
+      override-system-properties: true
+      allow-override: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: k8s
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://discovery-server:8761/eureka}
