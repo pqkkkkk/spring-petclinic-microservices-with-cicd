@@ -1,0 +1,45 @@
+# Values for Discovery Server (Eureka)
+replicaCount: 1
+
+image:
+  repository: kkkkk854/discovery-server
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+nameOverride: "discovery-server"
+fullnameOverride: "discovery-server"
+
+service:
+  type: NodePort
+  port: 8761
+
+# Health checks for Spring Boot Actuator
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8761
+  initialDelaySeconds: 60
+  periodSeconds: 30
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8761
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+# Resource limits
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+# Environment variables
+env:
+  - name: SPRING_PROFILES_ACTIVE
+    value: "k8s"
+  - name: CONFIG_SERVER_URL
+    value: "http://config-server:8888"

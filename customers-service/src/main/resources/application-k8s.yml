@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: customers-service
+  # config:
+  #   import: configserver:http://config-server:8888
+  cloud:
+    discovery:
+      enabled: true
+
+management:
+  tracing:
+    enabled: false
+  zipkin:
+    tracing:
+      endpoint: ""
+
+server:
+  port: 8081
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${random.uuid}
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://discovery-server:8761/eureka}
+    fetch-registry: true
+    register-with-eureka: true

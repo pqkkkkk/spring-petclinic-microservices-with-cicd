@@ -1,0 +1,47 @@
+# Values for Admin Server
+replicaCount: 1
+
+image:
+  repository: kkkkk854/admin-server
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+nameOverride: "admin-server"
+fullnameOverride: "admin-server"
+
+service:
+  type: ClusterIP
+  port: 9090
+
+# Health checks for Spring Boot Actuator
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 9090
+  initialDelaySeconds: 90
+  periodSeconds: 30
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 9090
+  initialDelaySeconds: 60
+  periodSeconds: 10
+
+# Resource limits
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+# Environment variables
+env:
+  - name: SPRING_PROFILES_ACTIVE
+    value: "docker"
+  - name: CONFIG_SERVER_URL
+    value: "http://config-server:8888"
+  - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+    value: "http://discovery-server:8761/eureka"

@@ -33,7 +33,7 @@
         <chaos-monkey-spring-boot.version>3.1.0</chaos-monkey-spring-boot.version>
         <jolokia-core.version>1.7.1</jolokia-core.version>
 
-        <docker.image.prefix>springcommunity</docker.image.prefix>
+        <docker.image.prefix>kkkkk854</docker.image.prefix>
         <docker.image.exposed.port>9090</docker.image.exposed.port>
         <docker.image.dockerfile.dir>${basedir}</docker.image.dockerfile.dir>
         <!-- podman is also supported -->
@@ -82,7 +82,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.8.8</version>
+                        <version>0.8.12</version>
                         <executions>
                             <!-- Thu thập khi chạy “mvn test” -->
                             <execution>
@@ -207,7 +207,7 @@
                                             <argument>${container.platform}</argument>
                                             <argument>${container.build.extraarg}</argument>
                                             <argument>-t</argument>
-                                            <argument>${docker.image.prefix}/${project.artifactId}</argument>
+                                            <argument>${docker.image.prefix}/${project.artifactId}:${docker.image.tag}</argument>
                                             <argument>${project.build.directory}</argument>
                                         </arguments>
                                     </configuration>
