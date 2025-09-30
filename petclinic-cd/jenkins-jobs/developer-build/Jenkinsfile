@@ -34,6 +34,9 @@ pipeline{
                         // Optionally validate if image exists in registry
                         // sh "docker manifest inspect ${imageName} || echo 'Warning: Image ${imageName} may not exist'"
                     }
+                    
+                    // Note: tracing-server uses public openzipkin/zipkin image, no validation needed
+                    echo "tracing-server will use openzipkin/zipkin:latest from Docker Hub"
                 }
             }
         }
@@ -54,6 +57,7 @@ pipeline{
 
                     // Deploy core services first (order matters)
                     def coreServices = ['config-server', 'discovery-server']
+                    def infrastructureServices = ['tracing-server']
                     def businessServices = ['customers-service','vets-service', 'visits-service', 'genai-service']
                     def gatewayServices = ['api-gateway', 'admin-server']
 
@@ -75,6 +79,23 @@ pipeline{
                         
                         // Wait a bit for service to be ready
                         sleep(time: 15, unit: 'SECONDS')
+                    }
+
+                    // Deploy infrastructure services (tracing, monitoring, etc.)
+                    echo "=== Deploying Infrastructure Services ==="
+                    infrastructureServices.each { service ->
+                        echo "Deploying ${service} to K8s..."
+                        
+                        sh """
+                            helm upgrade --install ${service} ./petclinic-cd/k8s/helm \\
+                                -f ./petclinic-cd/k8s/helm/values-${service}.yaml \\
+                                --namespace default \\
+                                --create-namespace \\
+                                --wait --timeout=300s --debug
+                        """
+                        
+                        // Wait a bit for service to be ready
+                        sleep(time: 10, unit: 'SECONDS')
                     }
 
                     // Deploy business services in parallel
