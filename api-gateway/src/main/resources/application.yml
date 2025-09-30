@@ -58,6 +58,12 @@ spring:
   cloud:
     discovery:
       enabled: true
+management:
+  tracing:
+    enabled: false
+  zipkin:
+    tracing:
+      endpoint: ""
     
 eureka:
   client:

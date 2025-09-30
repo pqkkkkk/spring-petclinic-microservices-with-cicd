@@ -8,6 +8,12 @@ spring:
   profiles:
     active: production
 
+management:
+  tracing:
+    enabled: false
+  zipkin:
+    tracing:
+      endpoint: ""
 ---
 spring:
   config:

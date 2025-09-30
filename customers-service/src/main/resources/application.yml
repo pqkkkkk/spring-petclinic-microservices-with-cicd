@@ -25,6 +25,13 @@ spring:
       # Prevent config server from overriding Eureka settings
       override-none: true
       override-system-properties: false
+      
+management:
+  tracing:
+    enabled: false
+  zipkin:
+    tracing:
+      endpoint: ""
     
 eureka:
   client:
