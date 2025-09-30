@@ -10,8 +10,9 @@ nameOverride: "api-gateway"
 fullnameOverride: "api-gateway"
 
 service:
-  type: LoadBalancer  # External access
+  type: NodePort  # For Kind cluster development
   port: 8080
+  nodePort: 30080  # Optional: specify nodePort
 
 # Health checks for Spring Boot Actuator
 livenessProbe:
