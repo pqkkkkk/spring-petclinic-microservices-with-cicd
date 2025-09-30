@@ -54,7 +54,7 @@ pipeline{
 
                     // Deploy core services first (order matters)
                     def coreServices = ['config-server', 'discovery-server']
-                    def businessServices = ['customers-service', 'vets-service', 'visits-service', 'genai-service']
+                    def businessServices = ['vets-service', 'visits-service', 'genai-service','customers-service']
                     def gatewayServices = ['api-gateway', 'admin-server']
 
                     // Deploy config-server first
