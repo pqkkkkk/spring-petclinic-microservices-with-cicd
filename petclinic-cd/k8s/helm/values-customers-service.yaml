@@ -14,19 +14,19 @@ service:
   port: 8081
 
 # Health checks for Spring Boot Actuator
-# livenessProbe:
-#   httpGet:
-#     path: /actuator/health/liveness
-#     port: 8081
-#   initialDelaySeconds: 90
-#   periodSeconds: 30
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8081
+  initialDelaySeconds: 90
+  periodSeconds: 30
 
-# readinessProbe:
-#   httpGet:
-#     path: /actuator/health/readiness
-#     port: 8081
-#   initialDelaySeconds: 60
-#   periodSeconds: 10
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8081
+  initialDelaySeconds: 60
+  periodSeconds: 10
 
 # Resource limits
 resources:
