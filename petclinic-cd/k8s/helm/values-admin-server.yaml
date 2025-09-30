@@ -40,7 +40,7 @@ resources:
 # Environment variables
 env:
   - name: SPRING_PROFILES_ACTIVE
-    value: "k8s"
+    value: "docker"
   - name: CONFIG_SERVER_URL
     value: "http://config-server:8888"
   - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
