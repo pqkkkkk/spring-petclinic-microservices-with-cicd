@@ -1,0 +1,55 @@
+pipeline{
+    agent any
+    stages{
+        stage('Cleanup Developer Resources'){
+            steps{
+                script{
+                    def services = [
+                        'vets-service',
+                        'customers-service',
+                        'visits-service',
+                        'genai-service',
+                        'admin-server',
+                        'api-gateway',
+                        'config-server',
+                        'discovery-server',
+                        'tracing-server'
+                    ]
+                    
+                    echo "=== Cleaning up Kubernetes resources for developer environment ==="
+                    services.each { service ->
+                        echo "Deleting resources for ${service}..."
+                        sh """
+                            # Uninstall Helm release
+                            helm uninstall ${service} --namespace default || echo '${service} not installed'
+                            
+                            # Clean up any remaining resources by label
+                            kubectl delete all -l app.kubernetes.io/instance=${service} --namespace default || echo 'No labeled resources to delete for ${service}'
+                            
+                            # Clean up PVCs
+                            kubectl delete pvc -l app.kubernetes.io/instance=${service} --namespace default || echo 'No PVCs to delete for ${service}'
+                            
+                            # Clean up ConfigMaps and Secrets if any
+                            kubectl delete configmap -l app.kubernetes.io/instance=${service} --namespace default || echo 'No ConfigMaps to delete for ${service}'
+                            kubectl delete secret -l app.kubernetes.io/instance=${service} --namespace default || echo 'No Secrets to delete for ${service}'
+                        """
+                    }
+                    
+                    echo "=== Verifying cleanup completion ==="
+                    sh """
+                        echo "Remaining Helm releases:"
+                        helm list --namespace default || echo 'No releases found'
+                        
+                        echo "Remaining pods:"
+                        kubectl get pods --namespace default || echo 'No pods found'
+                        
+                        echo "Remaining services:"
+                        kubectl get svc --namespace default || echo 'No services found'
+                    """
+                    
+                    echo "=== Cleanup completed ==="
+                }
+            }
+        }
+    }
+}
