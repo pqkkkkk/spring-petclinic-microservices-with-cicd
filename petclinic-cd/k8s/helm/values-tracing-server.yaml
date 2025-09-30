@@ -1,4 +1,6 @@
 # petclinic-cd/k8s/helm/values-tracing-server.yaml
+fullnameOverride: "tracing-server"
+
 replicaCount: 1
 
 image:
