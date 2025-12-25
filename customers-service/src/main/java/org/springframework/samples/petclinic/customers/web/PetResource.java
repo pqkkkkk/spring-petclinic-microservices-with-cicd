@@ -20,6 +20,7 @@ import jakarta.validation.constraints.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.samples.petclinic.customers.model.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,6 +47,11 @@ class PetResource {
         this.ownerRepository = ownerRepository;
     }
 
+    @GetMapping("/error")
+    public ResponseEntity<String> errorTest() {
+        return ResponseEntity.internalServerError().body("Error test");
+    }
+
     @GetMapping("/petTypes")
     public List<PetType> getPetTypes() {
         return petRepository.findPetTypes();
@@ -54,11 +60,11 @@ class PetResource {
     @PostMapping("/owners/{ownerId}/pets")
     @ResponseStatus(HttpStatus.CREATED)
     public Pet processCreationForm(
-        @RequestBody PetRequest petRequest,
-        @PathVariable("ownerId") @Min(1) int ownerId) {
+            @RequestBody PetRequest petRequest,
+            @PathVariable("ownerId") @Min(1) int ownerId) {
 
         Owner owner = ownerRepository.findById(ownerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Owner " + ownerId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Owner " + ownerId + " not found"));
 
         final Pet pet = new Pet();
         owner.addPet(pet);
@@ -79,7 +85,7 @@ class PetResource {
         pet.setBirthDate(petRequest.birthDate());
 
         petRepository.findPetTypeById(petRequest.typeId())
-            .ifPresent(pet::setType);
+                .ifPresent(pet::setType);
 
         log.info("Saving pet {}", pet);
         return petRepository.save(pet);
@@ -91,10 +97,9 @@ class PetResource {
         return new PetDetails(pet);
     }
 
-
     private Pet findPetById(int petId) {
         return petRepository.findById(petId)
-            .orElseThrow(() -> new ResourceNotFoundException("Pet " + petId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pet " + petId + " not found"));
     }
 
 }

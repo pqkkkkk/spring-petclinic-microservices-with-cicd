@@ -1,0 +1,70 @@
+# Authorization Policy: Chỉ cho phép api-gateway truy cập vào các backend services
+# Mỗi service cần một AuthorizationPolicy riêng vì YAML không cho phép duplicate keys
+
+---
+# Policy cho customers-service
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-gateway-to-customers
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: customers-service
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/default/sa/api-gateway"]
+
+---
+# Policy cho vets-service
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-gateway-to-vets
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vets-service
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/default/sa/api-gateway"]
+
+---
+# Policy cho visits-service
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-gateway-to-visits
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: visits-service
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/default/sa/api-gateway"]
+
+---
+# Policy cho config-server
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-gateway-to-config
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: config-server
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/default/sa/api-gateway"]
