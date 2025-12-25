@@ -13,6 +13,11 @@ service:
   type: ClusterIP
   port: 8084
 
+# Pod annotations for Istio compatibility
+podAnnotations:
+  sidecar.istio.io/rewriteAppHTTPProbers: "true"
+
+
 # Health checks for Spring Boot Actuator
 livenessProbe:
   httpGet:

@@ -14,6 +14,11 @@ service:
   port: 8080
   nodePort: 30080  # Optional: specify nodePort
 
+# Pod annotations for Istio compatibility
+podAnnotations:
+  sidecar.istio.io/rewriteAppHTTPProbers: "true"
+
+
 # Health checks for Spring Boot Actuator
 livenessProbe:
   httpGet:
