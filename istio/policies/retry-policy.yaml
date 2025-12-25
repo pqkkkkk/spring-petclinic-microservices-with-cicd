@@ -7,7 +7,7 @@ spec:
   hosts:
   - customers-service # Tên service trong K8s
   http:
-    route:
+  - route:
     - destination:
         host: customers-service
     retries:
