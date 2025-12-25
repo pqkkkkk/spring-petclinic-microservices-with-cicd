@@ -38,7 +38,6 @@ import java.util.List;
 class PetResource {
 
     private static final Logger log = LoggerFactory.getLogger(PetResource.class);
-
     private final PetRepository petRepository;
     private final OwnerRepository ownerRepository;
 
