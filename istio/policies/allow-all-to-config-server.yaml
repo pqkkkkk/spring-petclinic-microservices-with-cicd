@@ -1,0 +1,18 @@
+# AuthorizationPolicy để cho phép tất cả services trong namespace default
+# truy cập Config Server để lấy cấu hình khi khởi động
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-all-to-config-server
+  namespace: default
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: config-server
+  rules:
+  - from:
+    - source:
+        # Cho phép tất cả service accounts trong namespace default
+        principals:
+          - "cluster.local/ns/default/sa/*"

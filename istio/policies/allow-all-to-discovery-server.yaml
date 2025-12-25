@@ -1,0 +1,18 @@
+# AuthorizationPolicy để cho phép tất cả services trong namespace default
+# kết nối tới Discovery Server (Eureka) để đăng ký và lấy service registry
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-all-to-discovery-server
+  namespace: default
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: discovery-server
+  rules:
+  - from:
+    - source:
+        # Cho phép tất cả service accounts trong namespace default
+        principals:
+          - "cluster.local/ns/default/sa/*"
