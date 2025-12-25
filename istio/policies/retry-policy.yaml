@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: customers-service-retry
+  namespace: default
+spec:
+  hosts:
+  - customers-service # Tên service trong K8s
+  http:
+  - route:
+    - destination:
+        host: customers-service
+    retries:
+      attempts: 3 # Thử lại 3 lần
+      perTryTimeout: 2s # Mỗi lần chờ tối đa 2s
+      retryOn: 5xx # Chỉ retry khi gặp lỗi server (500, 503...)

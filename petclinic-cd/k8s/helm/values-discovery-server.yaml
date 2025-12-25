@@ -13,13 +13,19 @@ service:
   type: NodePort
   port: 8761
 
+# Pod annotations for Istio compatibility
+podAnnotations:
+  sidecar.istio.io/rewriteAppHTTPProbers: "true"
+
+
 # Health checks for Spring Boot Actuator
 livenessProbe:
   httpGet:
     path: /actuator/health/liveness
     port: 8761
-  initialDelaySeconds: 60
+  initialDelaySeconds: 90
   periodSeconds: 30
+  failureThreshold: 5
 
 readinessProbe:
   httpGet:
@@ -43,3 +49,14 @@ env:
     value: "k8s"
   - name: CONFIG_SERVER_URL
     value: "http://config-server:8888"
+  # Eureka standalone mode config for Kubernetes
+  - name: EUREKA_INSTANCE_HOSTNAME
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
+  - name: EUREKA_CLIENT_REGISTERWITHEUREKA
+    value: "false"
+  - name: EUREKA_CLIENT_FETCHREGISTRY
+    value: "false"
+  - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+    value: "http://discovery-server:8761/eureka/"

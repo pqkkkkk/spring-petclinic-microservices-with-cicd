@@ -173,11 +173,27 @@ def findServiceDir(String filePath){
 
 def getChangedFiles(){
     def changedFiles = []
-
-    currentBuild.changeSets.each { changeSet ->
-        changeSet.items.each { commit ->
-            commit.affectedFiles.each { file ->
-                changedFiles.add(file.path)
+    
+    // Use git diff to compare with previous commit
+    // This is more reliable than changeSets which can be empty
+    try {
+        def gitOutput = sh(script: 'git diff --name-only HEAD~1 HEAD', returnStdout: true).trim()
+        if (gitOutput) {
+            changedFiles = gitOutput.split('\n') as List
+            echo "Changed files detected: ${changedFiles}"
+        } else {
+            echo "No changed files detected from git diff"
+        }
+    } catch (Exception e) {
+        echo "Failed to get changed files via git diff: ${e.message}"
+        echo "Falling back to changeSet method..."
+        
+        // Fallback to changeSets if git diff fails
+        currentBuild.changeSets.each { changeSet ->
+            changeSet.items.each { commit ->
+                commit.affectedFiles.each { file ->
+                    changedFiles.add(file.path)
+                }
             }
         }
     }

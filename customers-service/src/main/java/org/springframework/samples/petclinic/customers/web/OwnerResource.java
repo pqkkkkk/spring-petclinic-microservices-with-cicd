@@ -42,7 +42,6 @@ import java.util.Optional;
 class OwnerResource {
 
     private static final Logger log = LoggerFactory.getLogger(OwnerResource.class);
-
     private final OwnerRepository ownerRepository;
     private final OwnerEntityMapper ownerEntityMapper;
 
@@ -82,8 +81,10 @@ class OwnerResource {
      */
     @PutMapping(value = "/{ownerId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateOwner(@PathVariable("ownerId") @Min(1) int ownerId, @Valid @RequestBody OwnerRequest ownerRequest) {
-        final Owner ownerModel = ownerRepository.findById(ownerId).orElseThrow(() -> new ResourceNotFoundException("Owner " + ownerId + " not found"));
+    public void updateOwner(@PathVariable("ownerId") @Min(1) int ownerId,
+            @Valid @RequestBody OwnerRequest ownerRequest) {
+        final Owner ownerModel = ownerRepository.findById(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Owner " + ownerId + " not found"));
 
         ownerEntityMapper.map(ownerModel, ownerRequest);
         log.info("Saving owner {}", ownerModel);
