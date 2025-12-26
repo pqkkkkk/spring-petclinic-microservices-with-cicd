@@ -1,0 +1,84 @@
+pipeline {
+    agent any
+
+    environment {
+        JAVA_HOME = tool 'JDK21'
+        PATH = "${JAVA_HOME}/bin:${env.PATH}"
+        SONAR_QUBE_ENV = 'SonarQube'
+        SONAR_QUBE_CREDENTIALS_ID = 'sonar-token'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out code from SCM...'
+                checkout scm
+            }
+        }
+
+        stage('Full Build') {
+            steps {
+                echo 'Building all modules to generate compiled classes...'
+                sh 'mvn clean compile -DskipTests'
+            }
+        }
+
+        stage('SAST - SonarQube Analysis') {
+            steps {
+                echo 'Running SonarQube analysis...'
+                withSonarQubeEnv(credentialsId: SONAR_QUBE_CREDENTIALS_ID, installationName: SONAR_QUBE_ENV) {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=petclinic'
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                echo 'Checking quality gate status...'
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        // Future stages for additional security scanning
+        // stage('SCA - Snyk') {
+        //     steps {
+        //         echo 'Running Snyk dependency vulnerability scan...'
+        //         // snyk test --all-projects
+        //     }
+        // }
+
+        // stage('DAST - OWASP ZAP') {
+        //     steps {
+        //         echo 'Running OWASP ZAP dynamic application security testing...'
+        //         // ZAP scanning commands
+        //     }
+        // }
+
+        // stage('Container Scan - Trivy') {
+        //     steps {
+        //         echo 'Scanning Docker images for vulnerabilities...'
+        //         // trivy image scanning
+        //     }
+        // }
+    }
+
+    post {
+        success {
+            echo '✅ Security scan completed successfully.'
+        }
+        failure {
+            echo '❌ Security scan failed.'
+            // Uncomment to send notifications
+            // emailext (
+            //     subject: "Security Scan Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            //     body: "Security scan failed. Check console output at ${env.BUILD_URL}",
+            //     recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+            // )
+        }
+        always {
+            echo "Security scan completed with status: ${currentBuild.currentResult}"
+        }
+    }
+}

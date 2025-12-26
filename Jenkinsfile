@@ -5,8 +5,6 @@ pipeline{
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
         DOCKER_REGISTRY_PREFIX = "kkkkk854"
         DOCKER_CREDENTIALS_ID = 'docker-credential'
-        SONAR_QUBE_ENV = 'SonarQube'
-        SONAR_QUBE_CREDENTIALS_ID = 'sonar-token'
     }
     stages {
         stage('Checkout'){
@@ -69,22 +67,6 @@ pipeline{
                             // Continue pipeline execution
                         }
                     }
-                }
-            }
-        }
-        stage('SAST - SonarQube Analysis'){
-            steps{
-                echo 'Running SonarQube analysis...'
-                withSonarQubeEnv(credentialsId: SONAR_QUBE_CREDENTIALS_ID, installationName: SONAR_QUBE_ENV) {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=petclinic'
-                }   
-            }
-        }
-        stage('Quality Gate'){
-            steps{
-                echo 'Checking quality gate status...'
-                timeout(time: 3, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
                 }
             }
         }
