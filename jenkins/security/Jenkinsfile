@@ -7,6 +7,7 @@ pipeline {
         SONAR_QUBE_ENV = 'SonarQube'
         SONAR_QUBE_CREDENTIALS_ID = 'sonar-token'
         SNYK_TOKEN_ID = 'snyk-token'
+        ZAP_HOST_VOLUME = 'd:/Coding/Java/spring-petclinic-microservices-with-cicd/jenkins/security/zap-report'
     }
 
     stages {
@@ -71,12 +72,11 @@ pipeline {
             steps {
                 echo 'Starting ZAP Baseline Scan...'
                 script {
-                    def workspaceUnix = env.WORKSPACE.replace('\\', '/').replace('C:', '/c').replace(' ', '\\ ')
                     sh """
                         docker run --network petclinic-network \
-                        -v ${workspaceUnix}:/zap/wrk/:rw \
+                        -v ${ZAP_HOST_VOLUME}:/zap/wrk/:rw \
                         -t zaproxy/zap-stable:latest zap-baseline.py \
-                        -t http://api-gateway:8085 \
+                        -t http://api-gateway:8080 \
                         -r zap_report.html \
                         || true 
                     """
@@ -93,7 +93,8 @@ pipeline {
             echo '❌ Security scan failed.'
         }
         always {
-            sh 'docker-compose down'
+            sh 'docker-compose down || true'
+            sh "cp ${ZAP_HOST_VOLUME}/zap_report.html . || true"
             archiveArtifacts artifacts: 'zap_report.html', allowEmptyArchive: true
             echo "Security scan completed with status: ${currentBuild.currentResult}"
         }

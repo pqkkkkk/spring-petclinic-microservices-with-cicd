@@ -109,7 +109,7 @@ services:
       discovery-server:
         condition: service_healthy
     ports:
-      - 8085:8085
+      - 8085:8080
 
   tracing-server:
     image: openzipkin/zipkin
