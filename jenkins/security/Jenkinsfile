@@ -70,14 +70,17 @@ pipeline {
         stage ('DAST OWASP ZAP Scan') {
             steps {
                 echo 'Starting ZAP Baseline Scan...'
-                sh """
-                    docker run --network petclinic-network \
-                    -v "\$(pwd)":/zap/wrk/:rw \
-                    -t zaproxy/zap-stable:latest zap-baseline.py \
-                    -t http://api-gateway:8085 \
-                    -r zap_report.html \
-                    || true 
-                """
+                script {
+                    def workspaceUnix = env.WORKSPACE.replace('\\', '/').replace('C:', '/c').replace(' ', '\\ ')
+                    sh """
+                        docker run --network petclinic-network \
+                        -v ${workspaceUnix}:/zap/wrk/:rw \
+                        -t zaproxy/zap-stable:latest zap-baseline.py \
+                        -t http://api-gateway:8085 \
+                        -r zap_report.html \
+                        || true 
+                    """
+                }
             }
         }
     }
