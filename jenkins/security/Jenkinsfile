@@ -7,7 +7,6 @@ pipeline {
         SONAR_QUBE_ENV = 'SonarQube'
         SONAR_QUBE_CREDENTIALS_ID = 'sonar-token'
         SNYK_TOKEN_ID = 'snyk-token'
-        PET_CLINIC_API_GATEWAY_URL = 'http://localhost:8085'
     }
 
     stages {
@@ -71,14 +70,14 @@ pipeline {
         stage ('DAST OWASP ZAP Scan') {
             steps {
                 echo 'Starting ZAP Baseline Scan...'
-                sh '''
+                sh """
                     docker run --network petclinic-network \
-                    -v $(pwd):/zap/wrk/:rw \
+                    -v "\$(pwd)":/zap/wrk/:rw \
                     -t zaproxy/zap-stable:latest zap-baseline.py \
-                    -t ${PET_CLINIC_API_GATEWAY_URL} \\
+                    -t http://api-gateway:8085 \
                     -r zap_report.html \
                     || true 
-                '''
+                """
             }
         }
     }
