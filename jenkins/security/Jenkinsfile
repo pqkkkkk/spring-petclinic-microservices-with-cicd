@@ -6,6 +6,7 @@ pipeline {
         PATH = "${JAVA_HOME}/bin:${env.PATH}"
         SONAR_QUBE_ENV = 'SonarQube'
         SONAR_QUBE_CREDENTIALS_ID = 'sonar-token'
+        SNYK_TOKEN_ID = 'snyk-token'
     }
 
     stages {
@@ -41,13 +42,17 @@ pipeline {
             }
         }
 
-        // Future stages for additional security scanning
-        // stage('SCA - Snyk') {
-        //     steps {
-        //         echo 'Running Snyk dependency vulnerability scan...'
-        //         // snyk test --all-projects
-        //     }
-        // }
+        stage('SCA - Snyk Security Scan') {
+            steps {
+                echo 'Running Snyk dependency vulnerability scan...'
+                snykSecurity(
+                        snykInstallation: 'snyk-cli',
+                        snykTokenId: "${SNYK_TOKEN_ID}",
+                        severity: 'medium',
+                        failOnIssues: false 
+                )
+            }
+        }
 
         // stage('DAST - OWASP ZAP') {
         //     steps {
