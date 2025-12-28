@@ -50,7 +50,8 @@ pipeline {
                         snykInstallation: 'snyk-cli',
                         snykTokenId: "${SNYK_TOKEN_ID}",
                         severity: 'medium',
-                        failOnIssues: false 
+                        failOnIssues: false,
+                        additionalArguments: '--all-projects'
                 )
             }
         }
