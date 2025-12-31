@@ -1,0 +1,103 @@
+pipeline {
+    agent any
+
+    environment {
+        JAVA_HOME = tool 'JDK21'
+        PATH = "${JAVA_HOME}/bin:${env.PATH}"
+        SONAR_QUBE_ENV = 'SonarQube'
+        SONAR_QUBE_CREDENTIALS_ID = 'sonar-token'
+        SNYK_TOKEN_ID = 'snyk-token'
+        ZAP_HOST_VOLUME = 'd:/Coding/Java/spring-petclinic-microservices-with-cicd/jenkins/security/zap-report'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out code from SCM...'
+                checkout scm
+            }
+        }
+
+        stage('Full Build') {
+            steps {
+                echo 'Building all modules to generate compiled classes...'
+                sh 'mvn clean compile -DskipTests'
+            }
+        }
+
+        stage('SAST - SonarQube Analysis') {
+            steps {
+                echo 'Running SonarQube analysis...'
+                withSonarQubeEnv(credentialsId: SONAR_QUBE_CREDENTIALS_ID, installationName: SONAR_QUBE_ENV) {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=petclinic'
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                echo 'Checking quality gate status...'
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('SCA - Snyk Security Scan') {
+            steps {
+                echo 'Running Snyk dependency vulnerability scan...'
+                snykSecurity(
+                        snykInstallation: 'snyk-cli',
+                        snykTokenId: "${SNYK_TOKEN_ID}",
+                        severity: 'medium',
+                        failOnIssues: false,
+                        additionalArguments: '--all-projects'
+                )
+            }
+        }
+
+        stage('Deploy for DAST') {
+            steps {
+                echo 'Deploying application for DAST analysis...'
+                sh 'docker-compose up -d'
+                sh '''
+                    for i in {1..30}; do
+                        curl -s http://localhost:8085/actuator/health && break
+                        sleep 5
+                    done
+                '''
+            }
+        }
+
+        stage ('DAST OWASP ZAP Scan') {
+            steps {
+                echo 'Starting ZAP Baseline Scan...'
+                script {
+                    sh """
+                        docker run --network petclinic-network \
+                        -v ${ZAP_HOST_VOLUME}:/zap/wrk/:rw \
+                        -t zaproxy/zap-stable:latest zap-baseline.py \
+                        -t http://api-gateway:8080 \
+                        -r zap_report.html \
+                        || true 
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Security scan completed successfully.'
+        }
+        failure {
+            echo '❌ Security scan failed.'
+        }
+        always {
+            sh 'docker-compose down || true'
+            sh "cp ${ZAP_HOST_VOLUME}/zap_report.html . || true"
+            archiveArtifacts artifacts: 'zap_report.html', allowEmptyArchive: true
+            echo "Security scan completed with status: ${currentBuild.currentResult}"
+        }
+    }
+}
